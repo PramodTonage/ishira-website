@@ -705,7 +705,7 @@ function CategorySection() {
           .cat-card-base { min-height: 180px; }
           @media (max-width: 768px) {
             .cat-card-base { min-height: 140px; }
-            .cat-kids { grid-column: span 2 !important; }
+            .cat-kids { grid-column: 1 / -1 !important; }
             .cat-grid {
               grid-template-columns: repeat(2, 1fr) !important;
               gap: 15px !important;
@@ -980,9 +980,24 @@ function ProductGrid() {
 
   return (
     <div>
+      <style>{`
+        .filter-scroll-container {
+          scrollbar-width: none; /* Firefox */
+        }
+        .filter-scroll-container::-webkit-scrollbar {
+          display: none; /* Chrome/Safari */
+        }
+      `}</style>
       {/* Filter Row */}
       <div style={{ display: 'flex', gap: '16px', marginBottom: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
-        <div style={{ display: 'flex', gap: '8px' }}>
+        <div className="filter-scroll-container" style={{ 
+          display: 'flex', 
+          gap: '8px', 
+          overflowX: 'auto', 
+          whiteSpace: 'nowrap', 
+          paddingRight: '20px',
+          maxWidth: '100%' 
+        }}>
           {/* FIX: Bug 2 - Filter pills must use exact category strings */}
           {[
             { label: 'ALL', value: 'All' },
@@ -992,6 +1007,7 @@ function ProductGrid() {
             { label: 'KIDS WEAR', value: 'Kids' }
           ].map(f => (
             <button key={f.value} onClick={() => setActiveFilter(f.value)} style={{
+              flexShrink: 0,
               background: activeFilter === f.value ? 'var(--gold)' : 'transparent',
               color: activeFilter === f.value ? 'white' : 'var(--primary)',
               border: `1px solid ${activeFilter === f.value ? 'var(--gold)' : 'var(--border)'}`,

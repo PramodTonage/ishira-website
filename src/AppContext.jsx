@@ -604,6 +604,67 @@ export function AppProvider({ children }) {
   }, []);
 
   // ═══════════════════════════════════════════════════════════
+  // BROWSER HISTORY & BACK BUTTON MANAGEMENT
+  // ═══════════════════════════════════════════════════════════
+
+  const [popstateActive, setPopstateActive] = useState(false);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setPopstateActive(true);
+      // Close any open modals/drawers
+      if (activeModal || accountOpen || cartOpen || selectedProduct) {
+        setActiveModal(null);
+        setAccountOpen(false);
+        setCartOpen(false);
+        setSelectedProduct(null);
+      }
+      
+      // Update filter based on URL hash
+      const hash = window.location.hash.toLowerCase();
+      if (hash === '#sarees') setActiveFilter('Saree');
+      else if (hash === '#blouses') setActiveFilter('Blouse');
+      else if (hash === '#kuchu') setActiveFilter('Kuchu');
+      else if (hash === '#kids') setActiveFilter('Kids');
+      else setActiveFilter('All');
+      
+      setTimeout(() => setPopstateActive(false), 50);
+    };
+    
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [activeModal, accountOpen, cartOpen, selectedProduct]);
+
+  // Push state for category tab navigation
+  useEffect(() => {
+    if (!popstateActive) {
+      if (activeFilter === 'All') {
+        if (window.location.hash) {
+          window.history.pushState(null, '', window.location.pathname + window.location.search);
+        }
+      } else {
+        const map = { Saree: 'sarees', Blouse: 'blouses', Kuchu: 'kuchu', Kids: 'kids' };
+        const newHash = `#${map[activeFilter]}`;
+        if (window.location.hash !== newHash) {
+          window.history.pushState(null, '', newHash);
+        }
+      }
+    }
+  }, [activeFilter, popstateActive]);
+
+  // Push state to trap back button when modal opens
+  const [modalStatePushed, setModalStatePushed] = useState(false);
+  useEffect(() => {
+    const isAnyModalOpen = activeModal || accountOpen || cartOpen || !!selectedProduct;
+    if (isAnyModalOpen && !modalStatePushed && !popstateActive) {
+      window.history.pushState({ modal: true }, '', window.location.hash || window.location.pathname + window.location.search);
+      setModalStatePushed(true);
+    } else if (!isAnyModalOpen && modalStatePushed) {
+      setModalStatePushed(false);
+    }
+  }, [activeModal, accountOpen, cartOpen, selectedProduct, modalStatePushed, popstateActive]);
+
+  // ═══════════════════════════════════════════════════════════
   // CONTEXT VALUE
   // ═══════════════════════════════════════════════════════════
 
